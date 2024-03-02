@@ -1,6 +1,6 @@
 #include<iostream>
 #include<limits>
-
+//Lower value higher priority
 using namespace std;
 
 struct P {
@@ -83,7 +83,7 @@ int main() {
         p[i].tat = p[i].ct - p[i].at;
         p[i].wt = p[i].tat - p[i].bt;
 
-        cout << p[i].n << "\t" << p[i].at << "\t" << p[i].bt << "\t" << p[i].p << "\t" << p[i].rt << "\t" << p[i].ct << "\t" << p[i].wt << "\t" << p[i].tat << endl;
+        cout << p[i].n << "\t\t" << p[i].at << "\t\t" << p[i].bt << "\t\t" << p[i].p << "\t\t" << p[i].rt << "\t\t" << p[i].ct << "\t\t" << p[i].wt << "\t\t" << p[i].tat << endl;
     }
 
     return 0;

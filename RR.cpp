@@ -1,80 +1,121 @@
-#include<iostream>
-#include<vector>
+#include <iostream>
+#include <climits>
 using namespace std;
 
 struct Process {
-    string pn;
-    int bt;
-    int at;
-    int wt;
-    int ct;
-    int rt;
-    int tt;
-
-    void init() {
-        wt = 0;
-        rt = 0;
-        tt = 0;
-    }
+    int AT, BT, WT, FT, TAT, pos;
 };
 
+int quant;
+
 int main() {
-    int np;
-    int tq;
-    int ct = 0;
-
-    cout << "\nEnter Time Quantum: ";
-    cin >> tq;
-
-    cout << "\nEnter no. of processes: ";
-    cin >> np;
-
-    vector<Process> p(np);
-
-    for (int n = 0; n < np; n++) {
-        p[n].pn = "p" + to_string(n + 1);
-        cout << "Enter Arrival Time for " << p[n].pn << ": ";
-        cin >> p[n].at;
-        cout << "Enter Burst Time for " << p[n].pn << ": ";
-        cin >> p[n].bt;
-        p[n].init();
+    int n, i, j;
+    // Taking Input
+    cout << "Enter the no. of processes: ";
+    cin >> n;
+    Process p[n];
+    cout << "Enter the quantum: ";
+    cin >> quant;
+    for (i = 0; i < n; i++){
+        p[i].pos = i+1;
+        cout << "Enter the Arrival time of process " << p[i].pos << ": ";
+        cin >> p[i].AT;
+        cout << "Enter the Burst time of process " << p[i].pos << ": ";
+        cin >> p[i].BT;
     }
+    int c = n, s[n][20];
+    float time = 0, mini = INT_MAX, b[n], a[n];
 
-    cout << "\n" << endl;
-
-    int rp = np;
-
-    for (int i = 0; i < np; i = (i + 1) % np) {
-        if (p[i].rt > 0 && p[i].at <= ct) {
-            if (p[i].rt == p[i].bt) {
-                p[i].rt = ct;
-            }
-
-            if (p[i].rt <= tq) {
-                ct += p[i].rt;
-                p[i].ct = ct;
-                p[i].rt = 0;
-                rp--;
-            } else {
-                ct += tq;
-                p[i].rt -= tq;
-            }
-        }
-
-        if (rp == 0) {
-            break;
+    // Initializing burst and arrival time arrays
+    int index = -1;
+    for (i = 0; i < n; i++) {
+        b[i] = p[i].BT;
+        a[i] = p[i].AT;
+        for (j = 0; j < 20; j++) {
+            s[i][j] = -1;
         }
     }
 
-    cout << "Process\tArrival Time\tBurst Time\tResponse Time\tCompletion Time\tWaiting Time\tTurnaround Time\n";
-    for (int n = 0; n < np; n++) {
-        p[n].tt = p[n].ct - p[n].at;
-        p[n].wt = p[n].tt - p[n].bt;
+    int tot_wt = 0, tot_tat = 0;
+    bool flag = false;
 
-        cout << p[n].pn << "\t" << p[n].at << "\t\t" << p[n].bt << "\t\t"
-             << p[n].rt << "\t\t" << p[n].ct << "\t\t" << p[n].wt
-             << "\t\t" << p[n].tt << "\n";
+    while (c != 0) {
+        mini = INT_MAX;
+        flag = false;
+
+        for (i = 0; i < n; i++) {
+            float p = time + 0.1;
+            if (a[i] <= p && mini > a[i] && b[i] > 0) {
+                index = i;
+                mini = a[i];
+                flag = true;
+            }
+        }
+
+        // if no process is ready to execute, just increment time
+        if (!flag) {
+            time++;
+            continue;
+        }
+
+        // calculating start time
+        j = 0;
+
+        while (s[index][j] != -1) {
+            j++;
+        }
+
+        if (s[index][j] == -1) {
+            s[index][j] = time;
+        }
+
+        if (b[index] <= quant) {
+            time += b[index];
+            b[index] = 0;
+        } else {
+            time += quant;
+            b[index] -= quant;
+        }
+
+        if (b[index] > 0) {
+            a[index] = time + 0.1;
+        }
+
+        // calculating arrival, burst, final times
+        if (b[index] == 0) {
+            c--;
+            p[index].FT = time;
+            p[index].WT = p[index].FT - p[index].AT - p[index].BT;
+            tot_wt += p[index].WT;
+            p[index].TAT = p[index].BT + p[index].WT;
+            tot_tat += p[index].TAT;
+        }
+    } // end of while loop
+
+    // Printing output
+    cout << "Process number ";
+    cout << "Arrival time ";
+    cout << "Burst time ";
+    cout << "\tCompletion time";
+    cout << "\tWaiting Time ";
+    cout << "\tTurnAround Time " << endl;
+
+    for (i = 0; i < n; i++) {
+        cout << p[i].pos << "\t\t";
+        cout << p[i].AT << "\t\t";
+        cout << p[i].BT << "\t";
+        cout << p[i].FT << "\t\t";
+        cout << p[i].WT << "\t\t";
+        cout << p[i].TAT << endl;
     }
+
+    // Calculating average wait time, turnaround time
+    double avg_wt = static_cast<double>(tot_wt) / n;
+    double avg_tat = static_cast<double>(tot_tat) / n;
+
+    // Printing average wait time, turnaround time
+    cout << "The average wait time is: " << avg_wt << endl;
+    cout << "The average TurnAround time is: " << avg_tat << endl;
 
     return 0;
 }
